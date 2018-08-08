@@ -6,6 +6,7 @@ library(ggplot2)
 startdate <- ymd('2014-05-01')
 enddate <- ymd('2018-05-01')
 
+
 data <- data %>% 
     mutate(Birth.Date = dmy(Birth.Date),
            Hire.Date = dmy(Hire.Date),
@@ -14,9 +15,6 @@ data <- data %>%
     replace_na(list(Terminate.Date = enddate)) %>% 
     mutate(SVC = decimal_date(Terminate.Date) - 
                decimal_date(as.Date(sapply(Hire.Date, max, startdate))))
-
-
-head(data %>% arrange(desc(SVC)))
 
 agg_exp <- matrix(rep(0,10000), nrow = 100, ncol = 100)
 agg_term <- matrix(rep(0,10000), nrow = 100, ncol = 100)
@@ -58,10 +56,7 @@ for (id in 1:dim(data)[1]){
         if (h[length(h)] == 0 ){h <- h[-length(h)]}
         h <- (h == 0) * (h == 0) * 1 + h
     }
-    
-    g   
-    h
-    
+
     if (is.term){
         agg_term[floor(ageend) + 1,
                  floor(svcend) + 1] <- agg_term[floor(ageend) + 1,
@@ -93,53 +88,54 @@ for (id in 1:dim(data)[1]){
 #    if(sum(f) > 0){
 #        if(sum(colSums(f)[colSums(f)>0] == h) == 0){print(id)} 
 #        if(sum(rowSums(f)[rowSums(f)>0] == g) == 0){print(id)}
-#    }
-#    if (is.na(sum(f))){print(id)}
-#    if (sum(g) == ageend - agestart){print(id)}
-#    if (sum(h) == svcend - svcstart){print(id)}
+    
+ #   if (is.na(sum(f))){print(id)}
+    if (sum(g) != data[id, 'SVC']){print(id)}
+    if (sum(h) != data[id, 'SVC']){print(id)}
     
 }
-g
-h
-f[agestart:(agestart+6),svcstart:(svcstart+6)]
-colSums(f)
-rowSums(f)
-
-age_exposure <- rowSums(agg_exp)
-svc_exposure <- colSums(agg_exp)
-
-age_term <- rowSums(agg_term)
-svc_term <- colSums(agg_term)
-
-agg_term[20:60,1:10]
-agg_exp[20:60,1:10]
-agg_term[20:60,1:10] / agg_exp[20:60,1:10]
-
-plot(svc_term/svc_exposure)
-
 age_exposure <- rowSums(agg_exp[1:60,])
 age_term <- rowSums(agg_term[1:60,])
 term_all = age_term/age_exposure
+term_all
 
 age_exposure <- rowSums(agg_exp[1:60,-1])
 age_term <- rowSums(agg_term[1:60,-1])
 term_1 = age_term/age_exposure
-
+term_1
 age_exposure <- rowSums(agg_exp[1:60,-c(1,2)])
 age_term <- rowSums(agg_term[1:60,-c(1,2)])
 term_2 = age_term/age_exposure
 
 plot(term_all, pch = 19) 
-plot(term_1, pch = 19, col = 'red')
+points(term_1, pch = 19, col = 'red')
 points(term_2, pch = 19, col = 'blue')
 lines(x = mywth$Age, y = mywth$MYWTH)
 
+age_exposure <- rowSums(agg_exp[1:60,-1])
 lwr <- term_1 - 1 * qnorm(0.975) * sqrt(term_1 * (1 - term_1) / age_exposure)
 upr <- term_1 + 1 * qnorm(0.975) * sqrt(term_1 * (1 - term_1) / age_exposure)
 
 plot(term_1, pch = 19, col = 'red')
 lines(lwr)
 lines(upr)
-lines(x = mywth$Age, y = 1.7*mywth$MYWTH, col = 'blue')
+lines(x = mywth$Age, y = 1.5*mywth$MYWTH, col = 'blue')
 
-sqrt(term_1 * (1- term_1) / age_exposure)
+age_exposure <- rowSums(agg_exp[1:60,-c(1,2)])
+lwr <- term_2 - 1 * qnorm(0.975) * sqrt(term_2 * (1 - term_2) / age_exposure)
+upr <- term_2 + 1 * qnorm(0.975) * sqrt(term_2 * (1 - term_2) / age_exposure)
+
+for(fac in 100:200){
+    print(fac)
+    print(sum(term_1[20:60] - (1+fac/100) * mywth$MYWTH[5:45])^2)
+}
+
+
+plot(term_2, pch = 19, col = 'red')
+lines(lwr)
+lines(upr)
+lines(x = mywth$Age, y = mywth$MYWTH, col = 'blue')
+
+
+
+
